@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- App theme required by AppCompat-based activities -->
+  <style name="MainTheme" parent="Theme.AppCompat.Light.NoActionBar">
+    <item name="android:windowBackground">@android:color/white</item>
+    <item name="android:statusBarColor">?android:colorPrimaryDark</item>
+    <item name="android:windowTranslucentStatus">false</item>
+    <!-- Add any color attributes your app needs -->
+  </style>
+</resources>

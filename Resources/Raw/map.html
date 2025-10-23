@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>MapLibre Track</title>
+
+    <!-- MapLibre CSS & JS -->
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+
+    <style>
+        html, body, #map {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #map {
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <script>
+        // Initialize MapLibre with a street map style
+        const map = new maplibregl.Map({
+            container: 'map',
+            style: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json', // street style with labels
+            center: [0, 0], // world view initially
+            zoom: 2 // initial zoom
+        });
+
+        let trackPoints = [];
+
+        // Ensure sources and layers exist
+        function ensureSourcesLayers() {
+            if (!map.getSource('route')) {
+                map.addSource('route', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+                map.addLayer({
+                    id: 'route-line',
+                    type: 'line',
+                    source: 'route',
+                    layout: { 'line-cap': 'round', 'line-join': 'round' },
+                    paint: { 'line-color': '#ff0000', 'line-width': 4, 'line-opacity': 0.9 }
+                });
+            }
+            if (!map.getSource('points')) {
+                map.addSource('points', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+                map.addLayer({
+                    id: 'points-layer',
+                    type: 'circle',
+                    source: 'points',
+                    paint: { 'circle-radius': 5, 'circle-color': '#0033ff' }
+                });
+            }
+        }
+
+        // Initialize layers when map loads
+        map.on('load', () => ensureSourcesLayers());
+
+        // Add a GPS point and update map
+        window.addPoint = function (lat, lon) {
+            trackPoints.push([lon, lat]);
+            ensureSourcesLayers();
+
+            const lineFeature = { type: 'Feature', geometry: { type: 'LineString', coordinates: trackPoints } };
+            const pointsFeatures = trackPoints.map(c => ({ type: 'Feature', geometry: { type: 'Point', coordinates: c } }));
+
+            map.getSource('route').setData({ type: 'FeatureCollection', features: [lineFeature] });
+            map.getSource('points').setData({ type: 'FeatureCollection', features: pointsFeatures });
+
+            if (trackPoints.length > 0) {
+                // Zoom in to street level for latest point
+                map.easeTo({ center: trackPoints[trackPoints.length - 1], zoom: 15, duration: 800 });
+            }
+        };
+
+        // Render a route from GeoJSON
+        window.setRoute = function (geojson) {
+            ensureSourcesLayers();
+            if (typeof geojson === 'string') {
+                try { geojson = JSON.parse(geojson); }
+                catch (e) { console.error('Invalid geojson'); return; }
+            }
+
+            let fc;
+            if (geojson.type === 'FeatureCollection') fc = geojson;
+            else if (geojson.type === 'Feature') fc = { type: 'FeatureCollection', features: [geojson] };
+            else if (geojson.type === 'LineString' || geojson.type === 'MultiLineString') fc = { type: 'FeatureCollection', features: [{ type: 'Feature', geometry: geojson }] };
+            else fc = { type: 'FeatureCollection', features: [] };
+
+            map.getSource('route').setData(fc);
+
+            const coords = [];
+            fc.features.forEach(f => {
+                if (f.geometry.type === 'LineString') coords.push(...f.geometry.coordinates);
+                else if (f.geometry.type === 'MultiLineString') f.geometry.coordinates.forEach(arr => coords.push(...arr));
+            });
+
+            const pointsFeatures = coords.map(c => ({ type: 'Feature', geometry: { type: 'Point', coordinates: c } }));
+            map.getSource('points').setData({ type: 'FeatureCollection', features: pointsFeatures });
+
+            if (coords.length > 0) {
+                let minX = coords[0][0], minY = coords[0][1], maxX = coords[0][0], maxY = coords[0][1];
+                coords.forEach(c => {
+                    if (c[0] < minX) minX = c[0];
+                    if (c[0] > maxX) maxX = c[0];
+                    if (c[1] < minY) minY = c[1];
+                    if (c[1] > maxY) maxY = c[1];
+                });
+                map.fitBounds([[minX, minY], [maxX, maxY]], { padding: 40 });
+            }
+        };
+
+        // Clear route and points
+        window.clearRoute = function () {
+            trackPoints = [];
+            ensureSourcesLayers();
+            map.getSource('route').setData({ type: 'FeatureCollection', features: [] });
+            map.getSource('points').setData({ type: 'FeatureCollection', features: [] });
+        };
+    </script>
+</body>
+</html>
