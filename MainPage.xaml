@@ -11,6 +11,8 @@
                 <Button x:Name="RecordButton" Text="Record" Clicked="OnRecordClicked" />
                 <Button x:Name="StopButton" Text="Stop" Clicked="OnStopClicked" IsEnabled="False" />
                 <Button x:Name="ClearButton" Text="Clear" Clicked="OnClearClicked" />
+                <Button x:Name="SavedRoutesButton" Text="Saved Routes" Clicked="OnSavedRoutesClicked"/>
+
             </StackLayout>
         </StackLayout>
     </Grid>

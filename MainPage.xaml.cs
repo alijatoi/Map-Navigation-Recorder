@@ -1,4 +1,9 @@
-﻿using System;
+﻿using MauiApp1.Models;
+using MauiApp1.Services;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Storage;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -7,15 +12,11 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Devices.Sensors;
-using Microsoft.Maui.Storage;
 
 namespace MauiApp1
 {
     public partial class MainPage : ContentPage
     {
-        record GpsPoint(double Latitude, double Longitude, DateTime Timestamp);
 
         readonly List<GpsPoint> _points = new();
         CancellationTokenSource? _cts;
@@ -191,12 +192,87 @@ namespace MauiApp1
                 StatusLabel.Text = success ? "Route shown (snapped)" : "Route shown (raw)";
                 if (!success) await RenderRawTrack(pointsCopy);
             }
+
+            if (_points.Count >= 1)
+            {
+                bool save = await DisplayAlert("Save Route?", "Do you want to save this route?", "Yes", "No");
+                if (save)
+                {
+                    string routeName = await DisplayPromptAsync("Save Route", "Enter a name for the route:", initialValue: $"Route {DateTime.Now:yyyy-MM-dd HH-mm}");
+                    if (!string.IsNullOrWhiteSpace(routeName))
+                    {
+                        var route = new SavedRoute
+                        {
+                            Name = routeName,
+                            Timestamp = DateTime.Now,
+                            Points = _points.ToList()
+                        };
+
+                        await RouteStorageService.SaveRouteAsync(route);
+                        await DisplayAlert("Saved", $"Route '{routeName}' saved.", "OK");
+                    }
+                }
+            }
             else if (pointsCopy.Count == 1)
             {
                 var p = pointsCopy[0];
                 var geojson = $"{{\"type\":\"FeatureCollection\",\"features\":[{{\"type\":\"Feature\",\"geometry\":{{\"type\":\"LineString\",\"coordinates\":[[{p.Longitude.ToString(CultureInfo.InvariantCulture)},{p.Latitude.ToString(CultureInfo.InvariantCulture)}]]}}}}]}}";
                 await MapWebView.EvaluateJavaScriptAsync($"window.setRoute({geojson});");
                 StatusLabel.Text = "Single point recorded";
+            }
+        }
+
+        async void OnSavedRoutesClicked(object sender, EventArgs e)
+        {
+            var routes = await RouteStorageService.LoadRoutesAsync();
+            if (routes.Count == 0)
+            {
+                await DisplayAlert("No Routes", "No saved routes found.", "OK");
+                return;
+            }
+
+            string[] options = routes.Select(r => r.Name).ToArray();
+            string selected = await DisplayActionSheet("Saved Routes", "Cancel", null, options);
+
+            if (!string.IsNullOrWhiteSpace(selected) && selected != "Cancel")
+            {
+                var route = routes.First(r => r.Name == selected);
+                await DisplayRouteOnMap(route);
+                await ShowRouteOptions(route);
+            }
+        }
+
+
+        async Task DisplayRouteOnMap(SavedRoute route)
+        {
+            var coordsArr = route.Points.Select(p => new[] { p.Longitude, p.Latitude }).ToArray();
+            var geojsonObj = new
+            {
+                type = "FeatureCollection",
+                features = new[]
+                {
+            new { type = "Feature", geometry = new { type = "LineString", coordinates = coordsArr } }
+        }
+            };
+
+            var json = JsonSerializer.Serialize(geojsonObj);
+            await MapWebView.EvaluateJavaScriptAsync($"window.setRoute({json});");
+            StatusLabel.Text = $"Showing: {route.Name}";
+        }
+
+        async Task ShowRouteOptions(SavedRoute route)
+        {
+            string action = await DisplayActionSheet($"Options for '{route.Name}'", "Cancel", null, "Rename", "Delete");
+            if (action == "Rename")
+            {
+                string newName = await DisplayPromptAsync("Rename Route", "Enter new name:", initialValue: route.Name);
+                if (!string.IsNullOrWhiteSpace(newName))
+                    await RouteStorageService.RenameRouteAsync(route, newName);
+            }
+            else if (action == "Delete")
+            {
+                RouteStorageService.DeleteRoute(route);
+                await DisplayAlert("Deleted", $"Route '{route.Name}' deleted.", "OK");
             }
         }
 
