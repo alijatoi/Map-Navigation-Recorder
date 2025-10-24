@@ -16,7 +16,7 @@ Works with .NET 9 and uses a WebView-based map (local `map.html`) for visualizat
 Prerequisites
 - .NET 9 SDK
 - .NET MAUI workloads installed (`dotnet workload install maui`)
-- Visual Studio with MAUI support (or another MAUI-capable IDE) and platform workloads for the targets you need (Android / Windows / MacCatalyst)
+- Visual Studio with MAUI support (or another MAUI-capable IDE) and platform workloads for the targets you need (Android / Windows / MacCatalyst) (For this project, Only Android and Windows are Targeted) 
 
 Open & run
 1. Clone the repo:
