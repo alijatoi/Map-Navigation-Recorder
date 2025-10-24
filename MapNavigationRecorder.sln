@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36518.9
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MauiApp1", "MauiApp1.csproj", "{E3D38839-29B3-4980-AC3B-703EE252B0B5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapNavigationRecorder", "MapNavigationRecorder.csproj", "{E3D38839-29B3-4980-AC3B-703EE252B0B5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -16,6 +16,7 @@ Global
 		{E3D38839-29B3-4980-AC3B-703EE252B0B5}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
 		{E3D38839-29B3-4980-AC3B-703EE252B0B5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E3D38839-29B3-4980-AC3B-703EE252B0B5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3D38839-29B3-4980-AC3B-703EE252B0B5}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

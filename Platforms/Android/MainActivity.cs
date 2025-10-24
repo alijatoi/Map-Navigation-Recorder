@@ -2,9 +2,9 @@
 using Android.Content.PM;
 using Android.OS;
 
-namespace MauiApp1
+namespace MapNavigationRecorder
 {
-    [Activity(Label = "MauiApp1", MainLauncher = true, HardwareAccelerated = true)]
+    [Activity(Label = "MapNavigationRecorder", MainLauncher = true, HardwareAccelerated = true)]
     public class MainActivity : MauiAppCompatActivity
     {
     }

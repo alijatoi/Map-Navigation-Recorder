@@ -1,4 +1,4 @@
-﻿namespace MauiApp1
+﻿namespace MapNavigationRecorder
 {
     public partial class App : Application
     {

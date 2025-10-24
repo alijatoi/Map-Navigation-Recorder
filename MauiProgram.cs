@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-
-namespace MauiApp1
+namespace MapNavigationRecorder
 {
     public static class MauiProgram
     {

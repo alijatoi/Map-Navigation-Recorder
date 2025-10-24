@@ -1,5 +1,5 @@
-﻿using MauiApp1.Models;
-using MauiApp1.Services;
+﻿using MapNavigationRecorder.Models;
+using MapNavigationRecorder.Services;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Storage;
@@ -13,7 +13,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace MauiApp1
+namespace MapNavigationRecorder
 {
     public partial class MainPage : ContentPage
     {

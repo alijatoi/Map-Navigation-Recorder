@@ -1,4 +1,4 @@
-﻿using MauiApp1.Models;
+﻿using MapNavigationRecorder.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,9 +7,8 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
-using MauiApp1.Models;
 
-namespace MauiApp1.Services
+namespace MapNavigationRecorder.Services
 {
     internal static class RouteStorageService
     {
