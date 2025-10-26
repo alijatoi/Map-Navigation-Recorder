@@ -48,7 +48,7 @@
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
+		<MauiImage Update="Resources\Images\dotnet_bot.svg" Resize="True" BaseSize="168,208" />
 
 		<!-- Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />
@@ -64,7 +64,9 @@
 
 	<ItemGroup>
 		<!-- Required packages -->
-		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="12.2.0" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.90" />
+		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.90" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
 		<PackageReference Include="System.Net.Http.Json" Version="9.0.10" />
 	</ItemGroup>

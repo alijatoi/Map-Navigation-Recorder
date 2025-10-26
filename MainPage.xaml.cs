@@ -12,6 +12,9 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Storage;
+
 
 namespace MapNavigationRecorder
 {
@@ -262,7 +265,7 @@ namespace MapNavigationRecorder
 
         async Task ShowRouteOptions(SavedRoute route)
         {
-            string action = await DisplayActionSheet($"Options for '{route.Name}'", "Cancel", null, "Rename", "Delete");
+            string action = await DisplayActionSheet($"Options for '{route.Name}'", "Cancel", null, "Rename", "Delete", "Export");
             if (action == "Rename")
             {
                 string newName = await DisplayPromptAsync("Rename Route", "Enter new name:", initialValue: route.Name);
@@ -273,6 +276,81 @@ namespace MapNavigationRecorder
             {
                 RouteStorageService.DeleteRoute(route);
                 await DisplayAlert("Deleted", $"Route '{route.Name}' deleted.", "OK");
+            }
+
+            else if (action == "Export")
+            {
+                await ShowExportOptions(route);
+            }
+        }
+
+        async Task ShowExportOptions(SavedRoute route)
+        {
+            string format = await DisplayActionSheet("Select Export Format", "Cancel", null,
+                "GPX (GPS)", "KML (Google Earth)", "GeoJSON", "CSV", "TCX (Garmin)");
+
+            if (string.IsNullOrWhiteSpace(format) || format == "Cancel")
+                return;
+
+            try
+            {
+                // Extract format name from the display string
+                string formatCode = format.Split(' ')[0].ToLower();
+
+                // Export the route
+                string content = RouteExportService.ExportRoute(route, formatCode);
+                string extension = RouteExportService.GetFileExtension(formatCode);
+
+                // Create filename
+                string fileName = $"{route.Name}_{DateTime.Now:yyyyMMdd_HHmmss}{extension}";
+                fileName = string.Join("_", fileName.Split(Path.GetInvalidFileNameChars()));
+
+                // Save file
+                await SaveExportedFile(fileName, content);
+
+                StatusLabel.Text = $"Exported to {formatCode.ToUpper()}";
+                await DisplayAlert("Export Successful", $"Route exported to {fileName}", "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Export Failed", $"Error: {ex.Message}", "OK");
+            }
+        }
+
+        async Task SaveExportedFile(string fileName, string content)
+        {
+            try
+            {
+                var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content));
+                var fileSaverResult = await FileSaver.Default.SaveAsync(fileName, stream, CancellationToken.None);
+                
+                if (fileSaverResult.IsSuccessful)
+                {
+                    await DisplayAlert("Success", $"File saved to: {fileSaverResult.FilePath}", "OK");
+                    return;
+                }
+                else
+                {
+                    throw new Exception(fileSaverResult.Exception?.Message ?? "Failed to save file");
+                }
+            }
+            catch (Exception ex)
+            {
+                // Fallback: Save to platform-specific Downloads folder
+                string folderPath;
+
+#if ANDROID
+                folderPath = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDownloads)?.AbsolutePath
+                    ?? FileSystem.AppDataDirectory;
+#elif WINDOWS
+                folderPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+#else
+                folderPath = FileSystem.AppDataDirectory;
+#endif
+
+                var filePath = Path.Combine(folderPath, fileName);
+                await File.WriteAllTextAsync(filePath, content);
+                await DisplayAlert("Saved", $"File saved to: {filePath}", "OK");
             }
         }
 
