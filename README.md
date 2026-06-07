@@ -1,6 +1,6 @@
 # MapNavigationRecorder
 
-Lightweight .NET MAUI app to record GPS tracks, snap them to roads (optional), and save/load recorded routes.
+Lightweight C# .NET MAUI (Cross Platform) app to record GPS tracks, snap them to roads (optional), and save/load recorded routes.
 
 Works with .NET 9 and uses a WebView-based map (local `map.html`) for visualization.
 
